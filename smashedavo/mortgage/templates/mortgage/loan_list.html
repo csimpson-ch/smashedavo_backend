@@ -1,0 +1,43 @@
+{% extends 'mortgage/base.html' %}
+{% block content %}
+
+<h1>Loan Details</h1>
+
+    <form action="{% url 'mortgage:loan_create'%}" method="GET">
+        {% csrf_token %}
+        <button class="btn btn-outline-primary" type="submit">Create New</button>
+    </form>
+        
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Amount</th>
+                    <th scope="col">Deposit</th>
+                    <th scope="col">Interest Rate</th>
+                    <th scope="col">Paid Principal</th>
+                    <th scope="col">Paid Interest</th>
+                    <th scope="col">Type</th>
+                    <th scope="col">Start Date</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            {% for loan in object_list %}
+                <tr>
+                    <td>{{loan.amount}}</td>
+                    <td>{{loan.deposit}}</td>
+                    <td>{{loan.interest_rate}}</td>
+                    <td>{{loan.paid_principal}}</td>
+                    <td>{{loan.paid_interest}}</td>
+                    <td>{{loan.loan_type}}</td>
+                    <td>{{loan.start_date}}</td>
+                    <td>
+                        <form action="{% url 'mortgage:loan_edit' loan.id %}" method="GET">
+                            {% csrf_token %}
+                            <button class="btn btn-outline-primary" type="submit">Edit</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+
+{% endblock content %}

@@ -1,0 +1,17 @@
+{% extends 'mortgage/base.html' %}
+
+{% block content %}
+
+    <h1>Create New Loan</h1>
+    <form action="" method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Create</button>
+        <br><br>
+    </form>
+
+    <form action="{% url 'mortgage:loan_list' %}" method="GET">
+        <button type="submit">Back</button>
+    </form>
+
+{% endblock content %}

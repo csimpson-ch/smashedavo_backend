@@ -1,0 +1,25 @@
+{% extends 'mortgage/base.html' %}
+{% block content %}
+
+    <h1>{{blogpost.title}}</h1>
+    <p>{{blogpost.text}}</p>
+    <p>Published by {{blogpost.user}} on {{blogpost.pub_date}}</p>
+
+        {% if request.user == blogpost.user or request.user.is_superuser %}
+            <form action="{% url 'mortgage:blog_edit' blogpost.id %}" method="GET">
+                {% csrf_token %}
+                <button class="btn btn-outline-primary" type="submit">Edit</button>
+            </form>
+            <br>
+            <form action="{% url 'mortgage:blog_delete' blogpost.id %}" method="POST">
+                {% csrf_token %}
+                <button class="btn btn-outline-danger" type="submit">Delete</button>
+            </form>
+            <br>
+        {% endif %}
+
+        <form action="{% url 'mortgage:blog_list' %}" method="GET">
+            <button class="btn btn-outline-secondary" type="submit">Back</button>
+        </form>
+
+{% endblock content %}

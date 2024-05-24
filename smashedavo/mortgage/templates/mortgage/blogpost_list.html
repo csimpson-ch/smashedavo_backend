@@ -1,0 +1,31 @@
+{% extends 'mortgage/base.html' %}
+{% block content %}
+
+    {% if object_list %}
+        <h1>Blog Posts</h1>
+    {% else %}
+        <h1>No Posts</h1>
+    {% endif %}
+
+    {% if request.user.is_superuser %}
+        <form action="{% url 'mortgage:blog_create' %}" method="GET">
+            {% csrf_token %}
+            <button class="btn btn-outline-primary" type="submit">New Post</button>
+        </form>
+        <br>
+    {% endif %}
+
+    <ul class="list-group">
+        {% for blog_post in object_list %}
+            <li class="list-group-item">
+                <h2>{{blog_post.title}}</h2>
+                <p>Posted by {{blog_post.user}} on {{blog_post.pub_date}}</p>
+                <form action="{% url 'mortgage:blog_detail' blog_post.id %}" method="GET">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-primary" type="submit">View</button>
+                </form>    
+            </li>
+        {% endfor %}
+    </ul>
+
+{% endblock content %}

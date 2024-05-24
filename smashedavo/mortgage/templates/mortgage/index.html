@@ -1,26 +1,5 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        {% load static %}
-        <link rel="stylesheet" href="{% static 'mortgage/bootstrap.min.css' %}">
-        <link rel="stylesheet" href="{% static 'mortgage/style.css' %}">
-    </head>
-    <header>
-        <div class="container">
-            <h1 class="logo">Smashed Avacados</h1>
-                <nav>
-                    <ul>
-                        <li><a href="{% url 'mortgage:index' %}">Home</a></li>
-
-                        {% if request.user.is_authenticated %}
-                            <li><a href="{% url 'mortgage:logout' %}">Logout</a></li>
-                        {% else %}
-                            <li><a href="{% url 'mortgage:login' %}">Login</a></li>
-                            <li><a href="{% url 'mortgage:signup' %}">Signup</a></li>
-                        {% endif %}
-                
-                    </ul>
-                </nav>
-            </div>
-        </header>
-</html>
+{% extends 'mortgage/base.html' %}
+{% block content %}
+    <h1>Welcome to Smashed Avacados</h1>
+    <p>TODO</p>
+{% endblock content %}

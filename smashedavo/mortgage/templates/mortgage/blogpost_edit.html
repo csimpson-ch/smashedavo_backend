@@ -1,0 +1,18 @@
+{% extends 'mortgage/base.html' %}
+
+{% block content %}
+
+  <h1>Existing Blog Post Details</h1>
+
+  <form action="" method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <br>
+    <button class="" type="submit">Update</button>
+  </form>
+  <br>
+  <form action="{% url 'mortgage:blog_detail' blog.id %}" method="GET">
+    <button type="submit">Back</button>
+  </form>
+
+{% endblock content %}

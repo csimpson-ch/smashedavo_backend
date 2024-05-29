@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from formset.widgets import DateInput, DateTimeInput
-from .models import BlogPost, Loan
+from .models import *
 
 
 class SignupForm(UserCreationForm):
@@ -68,3 +68,33 @@ class LoanForm(forms.ModelForm):
             self.fields[field].widget.attrs.update({'class': 'form-control'})
         
 
+class ExpenseIntervalForm(forms.ModelForm):
+    '''Form for creating a new instance of the EventInterval model.
+    '''
+    next_payment_date = forms.DateField(widget=DateInput)
+
+    class Meta:
+        model = ExpenseInterval
+        # fields = "__all__"
+        exclude = ('user',)
+
+    def __init__(self, *args, **kwargs):
+        super(ExpenseIntervalForm, self).__init__(*args, **kwargs)
+        for field in iter(self.fields):
+            self.fields[field].widget.attrs.update({'class': 'form-control'})
+
+
+class ExpenseAdhocForm(forms.ModelForm):
+    '''Form for creating a new instance of the EventInterval model.
+    '''
+    date = forms.DateField(widget=DateInput)
+
+    class Meta:
+        model = ExpenseAdhoc
+        # fields = "__all__"
+        exclude = ('user',)
+
+    def __init__(self, *args, **kwargs):
+        super(ExpenseAdhocForm, self).__init__(*args, **kwargs)
+        for field in iter(self.fields):
+            self.fields[field].widget.attrs.update({'class': 'form-control'})

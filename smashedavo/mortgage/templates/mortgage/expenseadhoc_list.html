@@ -1,0 +1,32 @@
+{% extends 'mortgage/base.html' %}
+{% block content %}
+
+<h1>Expense (Ad hoc) Details</h1>
+        
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Category</th>
+        <th scope="col">Date</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    {% for expenseadhoc in object_list %}
+      <tr>
+        <td>{{expenseadhoc.description}}</td>
+        <td>{{expenseadhoc.amount}}</td>
+        <td>{{expenseadhoc.category}}</td>
+        <td>{{expenseadhoc.date}}</td>
+        <td>
+          <form action="{% url 'mortgage:expenseadhoc_edit' expenseadhoc.id %}" method="GET">
+            {% csrf_token %}
+            <button class="btn btn-outline-primary" type="submit">Edit</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+
+{% endblock content %}

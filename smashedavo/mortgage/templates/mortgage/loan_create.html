@@ -6,12 +6,7 @@
     <form action="" method="POST">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Create</button>
-        <br><br>
-    </form>
-
-    <form action="{% url 'mortgage:loan_list' %}" method="GET">
-        <button type="submit">Back</button>
+        <button class="btn btn-outline-primary" type="submit">Create</button>
     </form>
 
 {% endblock content %}

@@ -2,17 +2,18 @@
 
 {% block content %}
 
-  <h1>Existing Blog Post Details</h1>
+  <h1>Update Blog Post</h1>
 
   <form action="" method="POST">
     {% csrf_token %}
     {{ form.as_p }}
-    <br>
-    <button class="" type="submit">Update</button>
+    <button class="btn btn-outline-primary" type="submit">Update</button>
   </form>
   <br>
-  <form action="{% url 'mortgage:blog_detail' blog.id %}" method="GET">
-    <button type="submit">Back</button>
-  </form>
+  <div>
+    <form action="{% url 'mortgage:blog_list' %}" method="GET">
+      <button class="btn btn-outline-secondary" type="submit">Back</button>
+    </form>
+  </div>
 
 {% endblock content %}

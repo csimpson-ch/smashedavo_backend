@@ -1,0 +1,67 @@
+{% extends 'mortgage/base.html' %}
+{% load humanize %}
+{% block content %}
+
+<h1>Approval Centre</h1>
+  
+  <form action="{% url 'mortgage:generate_transactions' %}" method="POST">
+    {% csrf_token %}
+    <button class="btn btn-outline-success" type="submit">Generate Transactions</button>
+  </form>
+
+  {% if messages %}
+    <div class="alert alert-danger">
+        {% for message in messages %}
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </div>
+  {% endif %}
+
+
+  <h1>Expenses For Approval</h1>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Category</th>
+        <th scope="col">Loan</th>
+        <th scope="col">Expense (Interval)</th>
+        <th scope="col">Date</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    {% for expenseadhoc in expensesadhoc %}
+      <tr class="table-warning">
+        <td>{{expenseadhoc.description}}</td>
+        <td>{{expenseadhoc.amount|floatformat:"2"|intcomma}}</td>
+        <td>{{expenseadhoc.category}}</td>
+        <td>
+          {% if expenseadhoc.loan.id is not None %}
+            {{expenseadhoc.loan.description}}
+          {% endif %}
+        </td>
+        <td>
+          {% if expenseadhoc.expenseinterval.id is not None %}
+            {{expenseadhoc.expenseinterval.description}}
+          {% endif %}
+        </td>
+        <td>{{expenseadhoc.date}}</td>
+
+        <td>
+          <form action="{% url 'mortgage:expenseadhoc_approve' expenseadhoc.id %}" method="POST">
+            {% csrf_token %}
+            <button class="btn btn-outline-success" type="submit">Approve</button>
+          </form>
+        </td>
+        <td>
+          <form action="{% url 'mortgage:expenseadhoc_delete' expenseadhoc.id %}" method="POST">
+            {% csrf_token %}
+            <button class="btn btn-outline-danger" type="submit">Delete</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+
+{% endblock content %}

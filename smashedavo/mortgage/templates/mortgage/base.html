@@ -54,12 +54,13 @@
                             <a class="nav-link active" href="{% url 'mortgage:create' %}">Create</a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn btn-outline-secondary btn-block" href="{% url 'mortgage:loan_list' %}">
-                                Loans
-                            </a>
+                            <a class="nav-link active" href="{% url 'mortgage:for_approval' False %}">For Approval</a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn btn-outline-secondary btn-block" href="{% url 'mortgage:expenseinterval_list' %}">Expenses (Interval)</a>
+                            <a class="nav-link active" href="{% url 'mortgage:loan_list' %}">Loans</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{% url 'mortgage:expenseinterval_list' %}">Expenses (Interval)</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'mortgage:expenseadhoc_list' %}">Expenses (Ad hoc)</a>

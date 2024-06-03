@@ -65,7 +65,10 @@ class LoanForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(LoanForm, self).__init__(*args, **kwargs)
         for field in iter(self.fields):
-            self.fields[field].widget.attrs.update({'class': 'form-control'})
+            if field == 'active':
+                self.fields[field].widget.attrs.update({'class': 'form-control form-check-input'})
+            else:
+                self.fields[field].widget.attrs.update({'class': 'form-control'})
         
 
 class ExpenseIntervalForm(forms.ModelForm):
@@ -87,14 +90,22 @@ class ExpenseIntervalForm(forms.ModelForm):
 class ExpenseAdhocForm(forms.ModelForm):
     '''Form for creating a new instance of the EventInterval model.
     '''
+    # approved = forms.CheckboxInput(attrs={"class": "form-check-input"})
     date = forms.DateField(widget=DateInput)
 
     class Meta:
         model = ExpenseAdhoc
         # fields = "__all__"
-        exclude = ('user',)
+        exclude = ('user', 'loan_amount_principal', 'loan_amount_interest')
+
+        # widgets = {
+
+        # }
 
     def __init__(self, *args, **kwargs):
         super(ExpenseAdhocForm, self).__init__(*args, **kwargs)
         for field in iter(self.fields):
-            self.fields[field].widget.attrs.update({'class': 'form-control'})
+            if field == 'approved':
+                self.fields[field].widget.attrs.update({'class': 'form-control form-check-input'})
+            else:
+                self.fields[field].widget.attrs.update({'class': 'form-control'})

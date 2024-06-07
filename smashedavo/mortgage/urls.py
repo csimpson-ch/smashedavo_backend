@@ -34,4 +34,5 @@ urlpatterns = [
     path('expenseadhoc/<int:expenseadhoc_id>/approve', views.expenseadhoc_approve, name='expenseadhoc_approve'),
     path('expenseadhoc/<int:expenseadhoc_id>/delete', views.expenseadhoc_delete, name='expenseadhoc_delete'),
     path('expenseadhoc/<int:expenseadhoc_id>/edit', views.expenseadhoc_edit, name='expenseadhoc_edit'),
+    path('backend_get_all_blogposts/', views.backend_get_all_blogposts, name='backend_get_all_blogposts'),
 ]

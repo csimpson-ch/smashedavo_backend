@@ -1,6 +1,4 @@
-import os
-from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound, JsonResponse
-from django.core import serializers
+from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound
 from django.template import loader
 from django.shortcuts import render, reverse, redirect, get_object_or_404
 from django.contrib import messages
@@ -15,33 +13,26 @@ from .models import *
 import datetime
 from dateutil.relativedelta import *
 
-
-def backend_get_all_blogposts(request):
-    blogposts_as_json = serializers.serialize('json', BlogPost.objects.all())
-    return HttpResponse(blogposts_as_json, content_type='application/json')
+# set backend url from environment variable
+backend_url = os.getenv('backend_url', default="http://localhost:3030")
 
 
-
-'''TODO - imported from capstone
-    # set backend url from environment variable
-    backend_url = os.getenv('backend_url', default="http://localhost:8000")
-
-
-    def get_request(endpoint, **kwargs):
-        params = ""
-        if (kwargs):
-            for key, value in kwargs.items():
-                params = params+key+"="+value+"&"
-        request_url = backend_url+endpoint+"?"+params
-        print("GET from {} ".format(request_url))
-        try:
-            # Call get method of requests library with URL and parameters
-            response = requests.get(request_url)
-            return response.json()
-        except Exception as err:
-            print(f"Unexpected {err=}, {type(err)=}")
-            print("Network exception occurred")
-'''
+def get_request(endpoint, **kwargs):
+    '''Code for get requests to back end.
+    '''
+    params = ""
+    if (kwargs):
+        for key, value in kwargs.items():
+            params = params+key+"="+value+"&"
+    request_url = backend_url+endpoint+"?"+params
+    print("GET from {} ".format(request_url))
+    try:
+        # Call get method of requests library with URL and parameters
+        response = requests.get(request_url)
+        return response.json()
+    except Exception as err:
+        print(f"Unexpected {err=}, {type(err)=}")
+        print("Network exception occurred")
 
 
 class BlogPostListView(ListView):

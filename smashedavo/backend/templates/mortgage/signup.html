@@ -1,0 +1,16 @@
+{% extends 'mortgage/base.html' %}
+{% block content %}
+
+<h1>Signup</h1>
+<form method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    {% if failed is not None %}
+        <div class="alert alert-danger" role="alert">
+            Signup failed: {{failed}}.
+        </div>
+    {% endif %}
+    <button class="btn btn-outline-primary" type="submit">Create Account</button>
+</form>
+
+{% endblock content %}

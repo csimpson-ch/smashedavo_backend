@@ -1,0 +1,53 @@
+{% extends 'mortgage/base.html' %}
+
+{% block content %}
+
+  <h1>Create New</h1>
+
+  <div class="row">
+
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Loan</h5>
+          <p class="card-text">Loan for a car, house, or similar.</p>
+          <form action="{% url 'mortgage:loan_create'%}" method="GET">
+            {% csrf_token %}
+            <button class="btn btn-outline-primary" type="submit">Create</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br>
+  <div class="row">
+
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Expense (Interval)</h5>
+          <p class="card-text">An expense that occurs at regular intervals, such as a rent, insurance, subscription, or other payment.</p>
+          <form action="{% url 'mortgage:expenseinterval_create'%}" method="GET">
+            {% csrf_token %}
+            <button class="btn btn-outline-primary" type="submit">Create</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-sm-6">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Expense (Ad hoc)</h5>
+          <p class="card-text">An expense that occurs once for a specific purpose, such as a food or ticket purchase.</p>
+          <form action="{% url 'mortgage:expenseadhoc_create'%}" method="GET">
+            {% csrf_token %}
+            <button class="btn btn-outline-primary" type="submit">Create</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+{% endblock content %}

@@ -1,0 +1,58 @@
+{% extends 'mortgage/base.html' %}
+{% block content %}
+
+  <h1>Expense (Interval) Details</h1>
+        
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Category</th>
+        <th scope="col">Interval</th>
+        <th scope="col">Loan</th>
+        <th scope="col">Next Payment Date</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+      <tr>
+        <td>{{expenseinterval.description}}</td>
+        <td>{{expenseinterval.amount}}</td>
+        <td>{{expenseinterval.category}}</td>
+        <td>{{expenseinterval.interval}}</td>
+        <td>{{expenseinterval.loan.description}}</td>
+        <td>{{expenseinterval.next_payment_date}}</td>
+        <td>
+          <form action="{% url 'mortgage:expenseinterval_edit' expenseinterval.id %}" method="GET">
+            {% csrf_token %}
+            <button class="btn btn-outline-primary" type="submit">Edit</button>
+          </form>
+        </td>
+      </tr>
+  </table>
+
+  <h2>Associated Payments</h2>
+  <table class="table table-hover">
+    <thead>
+        <tr class="table-head">
+        <th scope="col">Description</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Date</th>
+        <th scope="col">Approved</th>
+      </tr>
+    </thead>
+      {% for expenseadhoc in expensesadhoc %}
+        {% if expenseadhoc.approved %}
+          <tr class="table-light">
+        {% else %}
+          <tr class="table-warning">
+        {% endif %}
+          <td>{{expenseadhoc.description}}</td>
+          <td>{{expenseadhoc.amount}}</td>
+          <td>{{expenseadhoc.date}}</td>
+          <td>{{expenseadhoc.approved}}</td>
+        </tr>
+      {% endfor %}
+  </table>
+
+{% endblock content %}

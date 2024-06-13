@@ -1,0 +1,46 @@
+{% extends 'mortgage/base.html' %}
+{% load humanize %}
+{% block content %}
+
+  <h1>Loan Details</h1>
+        
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Interest Rate</th>
+        <th scope="col">Type</th>
+        <th scope="col">Start Date</th>
+        <th scope="col"></th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    {% for loan in object_list %}
+      {% if loan.active %}
+        <tr class="table-light">
+      {% else %}
+        <tr class="table-danger">
+      {% endif %}
+        <td>{{loan.description}}</td>
+        <td>{{loan.amount|floatformat:"2"|intcomma}}</td>
+        <td>{{loan.interest_rate|floatformat:"2"|intcomma}}</td>
+        <td>{{loan.loan_type}}</td>
+        <td>{{loan.start_date}}</td>
+        <td>
+          <form action="{% url 'mortgage:loan_payment' loan.id %}" method="GET">
+            {% csrf_token %}
+            <button class="btn btn-outline-primary" type="submit">Payments</button>
+          </form>
+        </td>
+        <td>
+          <form action="{% url 'mortgage:loan_edit' loan.id %}" method="GET">
+            {% csrf_token %}
+            <button class="btn btn-outline-primary" type="submit">Edit</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+
+{% endblock content %}

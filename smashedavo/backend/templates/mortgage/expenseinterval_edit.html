@@ -1,0 +1,21 @@
+{% extends 'mortgage/base.html' %}
+
+{% block content %}
+
+  <h1>Update Expense (Interval) Details</h1>
+
+  <form class="form-inline" action="" method="POST">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button class="btn btn-outline-primary" type="submit">Update</button>
+  </form>
+  <br>
+  <div class="input-group mb-3">
+    <form action="{% url 'mortgage:expenseinterval_delete' expenseinterval.id %}" method="POST">
+      {% csrf_token %}
+      <button class="btn btn-outline-danger" type="submit">Delete</button>
+    </form>
+  </div>
+
+
+{% endblock content %}

@@ -1,0 +1,14 @@
+{% extends 'mortgage/base.html' %}
+
+{% block content %}
+    <div class="container-fluid">
+        <h1>{{blogpost.title}}</h1>
+        <p>{{blogpost.text}}</p>
+        <p>Published by {{blogpost.user}} on {{blogpost.pub_date}}</p>
+
+        <form action="{% url 'mortgage:blog_list' %}" method="GET">
+            <button class="btn btn-outline-secondary" type="submit">Back</button>
+        </form>
+    </div>
+
+{% endblock content %}

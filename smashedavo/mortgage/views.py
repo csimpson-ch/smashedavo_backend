@@ -1,6 +1,7 @@
 import os
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotFound, JsonResponse
-from django.core import serializers
+from django.core import serializers as django_serializers
+from rest_framework import serializers as rest_framework_serializers
 from django.template import loader
 from django.shortcuts import render, reverse, redirect, get_object_or_404
 from django.contrib import messages
@@ -16,8 +17,21 @@ import datetime
 from dateutil.relativedelta import *
 
 
+class BlogPostSerializer(rest_framework_serializers.ModelSerializer):
+    '''Use the rest framework serializer to create custom class
+    '''
+    user = rest_framework_serializers.CharField(source ='user.username')
+    pub_date = rest_framework_serializers.DateTimeField(format="%Y-%m-%d")
+
+    class Meta:
+        model = BlogPost
+        fields = '__all__'
+        # fields = ['id', 'title', 'text', 'pub_date', 'user']
+
+
 def backend_get_all_blogposts(request):
-    blogposts_as_json = serializers.serialize('json', BlogPost.objects.all())
+    # blogposts_as_json = BlogPostSerializer(BlogPost.objects.all(), many=True).data
+    blogposts_as_json = django_serializers.serialize('json', BlogPost.objects.all(), cls=BlogPostSerializer)
     return HttpResponse(blogposts_as_json, content_type='application/json')
 
 

@@ -1,0 +1,80 @@
+{% extends 'mortgage/base.html' %}
+{% load humanize %}
+{% block content %}
+
+  <h1>Loan Details</h1>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Principal Paid</th>
+        <th scope="col">Interest Paid</th>
+        <th scope="col">Interest Rate</th>
+        <th scope="col">Type</th>
+        <th scope="col">Start Date</th>
+      </tr>
+    </thead>
+      <tr>
+      <td>{{loan.description}}</td>
+      <td>{{loan.amount|floatformat:"2"|intcomma}}</td>
+      <td>{{total_principal.total_principal|floatformat:"2"|intcomma}}</td>
+      <td>{{total_interest.total_interest|floatformat:"2"|intcomma}}</td>
+      <td>{{loan.interest_rate|floatformat:"2"|intcomma}}</td>
+      <td>{{loan.loan_type}}</td>
+      <td>{{loan.start_date}}</td>
+    </tr>
+  </table>
+
+
+  <h1>Associated Interval Payments</h1>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+          <th scope="col">Amount</th>
+          <th scope="col">Category</th>
+          <th scope="col">Interval</th>
+          <th scope="col">Loan</th>
+          <th scope="col">Next Payment Date</th>
+          <th scope="col"></th>
+        </tr>
+    </thead>
+      {% for expenseinterval in expensesinterval %}
+        <tr>
+          <td>{{expenseinterval.description}}</td>
+          <td>{{expenseinterval.amount|floatformat:"2"|intcomma}}</td>
+          <td>{{expenseinterval.category}}</td>
+          <td>{{expenseinterval.interval}}</td>
+          <td>{{expenseinterval.loan.description}}</td>
+          <td>{{expenseinterval.next_payment_date}}</td>
+        </tr>
+      {% endfor%}
+  </table>
+  <br>
+  
+  <h2>Associated Individual Payments</h2>
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Interest</th>
+        <th scope="col">Principal</th>
+        <th scope="col">Approved</th>
+        <th scope="col">Date</th>
+      </tr>
+    </thead>
+      {% for expenseadhoc in expensesadhoc %}
+        <tr>
+          <td>{{expenseadhoc.description}}</td>
+          <td>{{expenseadhoc.amount|floatformat:"2"|intcomma}}</td>
+          <td>{{expenseadhoc.loan_amount_interest|floatformat:"2"|intcomma}}</td>
+          <td>{{expenseadhoc.loan_amount_principal|floatformat:"2"|intcomma}}</td>
+          <td>{{expenseadhoc.approved}}</td>
+          <td>{{expenseadhoc.date}}</td>
+        </tr>
+      {% endfor %}
+  </table>
+
+{% endblock content %}

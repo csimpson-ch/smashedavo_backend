@@ -1,0 +1,25 @@
+{% extends 'mortgage/base.html' %}
+
+{% block content %}
+
+  <h1>Delete Blog Post</h1>
+  
+  <div class="alert alert-danger">
+    <p>Are you sure you want to delete the following post?</p>
+    <h1>{{blogpost.title}}</h1>
+    <p>{{blogpost.text}}</p>
+  </div>
+  <div>
+    <form action="{% url 'mortgage:blog_delete' blogpost.id %}" method="POST">
+      {% csrf_token %}
+      <button class="btn btn-outline-danger" type="submit">Delete</button>
+    </form>
+  </div>
+  <br>
+  <div>
+    <form action="{% url 'mortgage:blog_list' %}" method="GET">
+      <button class="btn btn-outline-secondary" type="submit">Back</button>
+    </form>
+  </div>
+
+{% endblock content %}

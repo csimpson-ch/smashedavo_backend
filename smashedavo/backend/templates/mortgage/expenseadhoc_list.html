@@ -1,0 +1,55 @@
+{% extends 'mortgage/base.html' %}
+{% load humanize %}
+{% block content %}
+
+<h1>Expense (Ad hoc) Details</h1>
+        
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Description</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Category</th>
+        <th scope="col">Loan</th>
+        <th scope="col">Expense (Interval)</th>
+        <th scope="col">Date</th>
+        <th scope="col"></th>
+      </tr>
+    </thead>
+    {% for expenseadhoc in object_list %}
+      {% if expenseadhoc.approved %}
+        <tr class="table-light">
+      {% else %}
+        <tr class="table-warning">
+      {% endif %}
+        <td>{{expenseadhoc.description}}</td>
+        <td>{{expenseadhoc.amount|floatformat:"2"|intcomma}}</td>
+        <td>{{expenseadhoc.category}}</td>
+        <td>
+          {% if expenseadhoc.loan.id is not None %}
+            {{expenseadhoc.loan.description}}
+          {% endif %}
+        </td>
+        <td>
+          {% if expenseadhoc.expenseinterval.id is not None %}
+            {{expenseadhoc.expenseinterval.description}}
+          {% endif %}
+        </td>
+        <td>{{expenseadhoc.date}}</td>
+
+        {% if expenseadhoc.approved %}
+          <td>
+            <form action="{% url 'mortgage:expenseadhoc_edit' expenseadhoc.id %}" method="GET">
+              {% csrf_token %}
+              <button class="btn btn-outline-primary" type="submit">Edit</button>
+            </form>
+          </td>
+        {% else %}
+          <td>Requires Approval
+          </td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+  </table>
+
+{% endblock content %}

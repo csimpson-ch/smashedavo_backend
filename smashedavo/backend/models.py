@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import PermissionsMixin, AbstractBaseUser, BaseUserManager
 from django.utils import timezone
 import datetime
 
@@ -7,10 +7,12 @@ import datetime
 class CustomUserManager(BaseUserManager):
     use_in_migrations = True
 
-    def create_user(self, username, email, first_name, last_name, password=None):
+    # def check_username_exists(self, username):
+    #     return CustomUser.objects.filter(username=username).exists()
+
+    def create_user(self, username, first_name, last_name, password=None):
         user = self.model(
-            username=username,
-            email=email,            
+            username=username,            
             first_name=first_name,
             last_name=last_name,
             password=password
@@ -22,10 +24,9 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, username, email, first_name, last_name, password=None):
+    def create_superuser(self, username, first_name, last_name, password=None):
         user = self.create_user(
             username=username,
-            email=email,
             first_name=first_name,
             last_name=last_name,
             password=password
@@ -39,8 +40,7 @@ class CustomUserManager(BaseUserManager):
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    username = models.CharField(max_length=50, unique=True, default='username')
-    email = models.EmailField(unique=True)
+    username = models.EmailField(max_length=254, unique=True)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
     date_joined = models.DateTimeField(default=timezone.now)
@@ -49,20 +49,19 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_superuser = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     # set the object manager
     objects = CustomUserManager()
 
-    def __str__(self):
+    def get_short_name(self):
         return self.username
 
     def natural_key(self):
-        return self.username
-
-    def get_full_name(self):
         return f'{self.first_name} {self.last_name}'
 
+    def __str__(self):
+        return self.username
 
 class BlogPost(models.Model):
     """Blog Post object associated with one User object.

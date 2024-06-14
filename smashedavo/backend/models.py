@@ -37,9 +37,6 @@ class CustomUserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def get_by_natural_key(self):
-        return self.get(self.username)
-
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=50, unique=True, default='username')
@@ -113,8 +110,8 @@ class Loan(models.Model):
         return f'User: {self.user.username}, Description: {self.description}' 
 
 
-class ExpenseInterval(models.Model):
-    """Object representing a subscription that a user has.
+class RegularPayment(models.Model):
+    """Object representing a recurring/regular payment made by user at regular intervals.
     """
     # time intervals between subscription payments
     INTERVAL_CHOICES = (
@@ -162,8 +159,11 @@ class ExpenseInterval(models.Model):
     def __str__(self):
         return f'Description: {self.description}, Amount: {self.amount}, Interval: {self.interval}, Next Payment: {self.next_payment_date}\n '
 
+    def natural_key(self):
+        return self.description
 
-class ExpenseAdhoc(models.Model):
+
+class Expense(models.Model):
     """Object representing a specific expense.
     """
     # major categories for different types of expenses
@@ -200,7 +200,7 @@ class ExpenseAdhoc(models.Model):
 
     # set foreign keys
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    expenseinterval = models.ForeignKey(ExpenseInterval, blank=True, null=True, on_delete=models.CASCADE)
+    regularpayment = models.ForeignKey(RegularPayment, blank=True, null=True, on_delete=models.CASCADE)
     loan = models.ForeignKey(Loan, blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):

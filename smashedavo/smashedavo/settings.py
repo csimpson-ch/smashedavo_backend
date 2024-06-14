@@ -34,7 +34,7 @@ ALLOWED_HOSTS = ['*']
 
 # Application definition
 INSTALLED_APPS = [
-    'mortgage.apps.MortgageConfig',
+    # 'mortgage.apps.MortgageConfig',
     'backend.apps.BackendConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -52,6 +52,9 @@ CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
     'http://localhost:3000',
 ]
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
+CORS_ALLOW_CREDENTIALS = True
+# TODO - remove this for production
 CORS_ORIGIN_ALLOW_ALL = True
 
 

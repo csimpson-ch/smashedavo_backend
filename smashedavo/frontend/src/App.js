@@ -1,15 +1,17 @@
 import Header from "./components/Header";
-import Blog from "./components/Blog";
-import DogFacts from "./components/DogFacts";
+import Login from "./components/Login";
+import BlogPosts from "./components/BlogPosts";
+import Expenses from "./components/Expenses";
 import { Routes, Route } from "react-router-dom";
+
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Header />} />
-      <Route path="/home" element={<Header />} />
-      <Route path="/blog" element={<Blog />} />
-      <Route path="/dogfacts" element={<DogFacts />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/blog" element={<BlogPosts />} />
+      <Route path="/expenses" element={<Expenses />} />
     </Routes>
   );
 }

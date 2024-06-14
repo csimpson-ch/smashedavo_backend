@@ -4,36 +4,25 @@ import '../static/bootstrap.min.css';
 
 function Heading(blogposts) {
     let numberBlogPosts = Object.keys(blogposts).length;
-    let lengthCheck = JSON.stringify(blogposts);
-    console.log(lengthCheck);
-    console.log(blogposts);
     if (numberBlogPosts === 0) {
         return (
             <div>
                 <h1>No posts are available</h1>
             </div>
         )
-    } else if (numberBlogPosts > 0) {
-        return (
-            <div>
-                <h1>Blog Posts</h1>
-            </div>
-        )
     } else {
         return (
             <div>
-                <h1>Something Else</h1>
+                <h1>Blog Posts</h1>
             </div>
         )
     }
 }
 
 
-const DogFacts = () => {
+const BlogPosts = () => {
     // State to hold the fetched blog posts
     const [blogposts, setBlogposts] = useState([]);
-
-    // let url = 'https://api.openbrewerydb.org/v1/breweries';
     let url = 'http://127.0.0.1:8000/backend/blogposts';
 
     useEffect(() => {
@@ -56,6 +45,7 @@ const DogFacts = () => {
     
     // Render the fetched blog posts
     return (
+
         <div>
             <Heading
                 blogposts={blogposts}
@@ -75,4 +65,4 @@ const DogFacts = () => {
     )
 }
 
-export default DogFacts
+export default BlogPosts

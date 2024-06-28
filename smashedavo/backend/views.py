@@ -9,6 +9,7 @@ from django.views.decorators.csrf import requires_csrf_token, csrf_exempt
 from django.db import IntegrityError
 from django.db.models.constraints import UniqueConstraint
 from .models import *
+from .forms import ExpenseCreateForm
 import json
 
 @csrf_exempt
@@ -88,10 +89,24 @@ def expenses(request):
     Returns:
     - HttpResponse: An HTTP response containing the serialized expense data in JSON format.
     """
+    # determine which column to order by
+    request_orderby = request.GET.get('orderby')
+    if request_orderby == 'amount':
+        orderby = 'amount'
+    elif request_orderby == 'description':
+        orderby = 'description'
+    elif request_orderby == 'category':
+        orderby = 'category'
+    else:
+        orderby = 'date'
+
+    # change to desc order if requested, otherwise asc by default
+    if request.GET.get('ordering') == 'desc':
+        orderby = '-'+orderby
+
     json_serializer = serializers.serialize(
         'json',
-        # Expense.objects.filter(user__username=request.user).order_by("-date")[:],
-        Expense.objects.all(),
+        Expense.objects.all().order_by(orderby),
         use_natural_foreign_keys=True,
     )
     return HttpResponse(json_serializer, content_type='application/json')
@@ -103,4 +118,36 @@ def regularpayments(request):
         RegularPayment.objects.all(),
         use_natural_foreign_keys=True,
     )
+    return HttpResponse(json_serializer, content_type='application/json')
+
+
+@csrf_exempt
+def expense_create(request):
+    '''TODO - update so user is set automatically, instead of in post request.
+    '''
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        print(data)
+        try:
+            form = ExpenseCreateForm(data)
+        except:
+            return JsonResponse({"success": False, 'errors': 'unknown error in submitting form'})
+        if form.is_valid():
+            try:
+                bbb = form.save(commit=False)
+                bbb.user = CustomUser.objects.get(username='colin.c.simpson@gmail.com')
+                # bbb.regular_payment = RegularPayment.objects.get(description=data['regularpayment'])
+                # bbb.save()
+                return JsonResponse({"success": True})
+            except Exception as err:
+                return JsonResponse({"success": False, 'errors': str(err)})
+
+        else:
+            return JsonResponse({"success": False, 'errors': form.errors})
+    return JsonResponse({"success": False, "errors": "Invalid request method"})
+
+
+@csrf_exempt
+def expense_category_choices(request):
+    json_serializer = json.dumps(dict(Expense.EXPENSE_CHOICES))
     return HttpResponse(json_serializer, content_type='application/json')

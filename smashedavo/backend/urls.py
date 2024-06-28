@@ -12,4 +12,6 @@ urlpatterns = [
     path('blogposts/', views.blogposts, name='blogposts'),
     path('expenses/', views.expenses, name='expenses'),
     path('regularpayments/', views.regularpayments, name='regularpayments'),
+    path('expense/create/', views.expense_create, name='expense_create'),
+    path('expense_category_choices/', views.expense_category_choices, name='expense_category_choices'),
 ]

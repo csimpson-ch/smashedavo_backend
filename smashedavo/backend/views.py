@@ -9,7 +9,7 @@ from django.views.decorators.csrf import requires_csrf_token, csrf_exempt
 from django.db import IntegrityError
 from django.db.models.constraints import UniqueConstraint
 from .models import *
-from .forms import ExpenseCreateForm
+from .forms import ExpenseForm
 import json
 
 @csrf_exempt
@@ -129,7 +129,7 @@ def expense_create(request):
         data = json.loads(request.body)
         print(data)
         try:
-            form = ExpenseCreateForm(data)
+            form = ExpenseForm(data)
         except:
             return JsonResponse({"success": False, 'errors': 'unknown error in submitting form'})
         if form.is_valid():
@@ -144,6 +144,26 @@ def expense_create(request):
 
         else:
             return JsonResponse({"success": False, 'errors': form.errors})
+    return JsonResponse({"success": False, "errors": "Invalid request method"})
+
+
+@csrf_exempt
+def expense_update(request, expense_id):
+    '''TODO - currently hardcoded to specific user, need to fix.
+    '''
+    expense = Expense.objects.get(id=expense_id)
+    if request.method == 'POST':
+        form_data = json.loads(request.body)
+        form = ExpenseForm(form_data, instance=expense)
+        # print(form)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({"success": True})
+        else:
+            return JsonResponse({"success": False, 'errors': form.errors})
+    elif request.method == 'GET':
+        json_serializer = serializers.serialize('json', [expense])[1:-1]
+        return HttpResponse(json_serializer, content_type='application/json')
     return JsonResponse({"success": False, "errors": "Invalid request method"})
 
 

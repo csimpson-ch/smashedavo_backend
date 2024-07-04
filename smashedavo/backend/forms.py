@@ -4,7 +4,7 @@ from django import forms
 # from formset.widgets import DateInput
 from .models import Expense
 
-class ExpenseCreateForm(forms.ModelForm):
+class ExpenseForm(forms.ModelForm):
     '''Form for creating a new instance of the EventInterval model.
     '''
     # model fields

@@ -122,7 +122,20 @@ def regularpayments(request):
 
 
 @csrf_exempt
-def expense_create(request):
+def expenses_select(request, expense_id):
+    if request.method == 'GET':
+        expense = Expense.objects.get(id=expense_id)
+        json_serializer = serializers.serialize('json', [expense])[1:-1]
+        json_dict = json.loads(json_serializer)
+        json_dict['category_choices'] = dict(Expense.EXPENSE_CHOICES)
+        json_to_return = json.dumps(json_dict)
+        print(json_to_return)
+        return HttpResponse(json_to_return, content_type='application/json')
+    return JsonResponse({"success": False, "errors": "Invalid request method"})
+
+
+@csrf_exempt
+def expenses_create(request):
     '''TODO - update so user is set automatically, instead of in post request.
     '''
     if request.method == 'POST':
@@ -137,37 +150,42 @@ def expense_create(request):
                 bbb = form.save(commit=False)
                 bbb.user = CustomUser.objects.get(username='colin.c.simpson@gmail.com')
                 # bbb.regular_payment = RegularPayment.objects.get(description=data['regularpayment'])
-                # bbb.save()
+                bbb.save()
                 return JsonResponse({"success": True})
             except Exception as err:
                 return JsonResponse({"success": False, 'errors': str(err)})
-
-        else:
-            return JsonResponse({"success": False, 'errors': form.errors})
-    return JsonResponse({"success": False, "errors": "Invalid request method"})
-
-
-@csrf_exempt
-def expense_update(request, expense_id):
-    '''TODO - currently hardcoded to specific user, need to fix.
-    '''
-    expense = Expense.objects.get(id=expense_id)
-    if request.method == 'POST':
-        form_data = json.loads(request.body)
-        form = ExpenseForm(form_data, instance=expense)
-        # print(form)
-        if form.is_valid():
-            form.save()
-            return JsonResponse({"success": True})
         else:
             return JsonResponse({"success": False, 'errors': form.errors})
     elif request.method == 'GET':
-        json_serializer = serializers.serialize('json', [expense])[1:-1]
+        json_serializer = json.dumps(dict(Expense.EXPENSE_CHOICES))
         return HttpResponse(json_serializer, content_type='application/json')
     return JsonResponse({"success": False, "errors": "Invalid request method"})
 
 
 @csrf_exempt
-def expense_category_choices(request):
-    json_serializer = json.dumps(dict(Expense.EXPENSE_CHOICES))
-    return HttpResponse(json_serializer, content_type='application/json')
+def expenses_edit(request, expense_id):
+    '''TODO - currently hardcoded to specific user, need to fix.
+    '''
+    if request.method == 'POST':
+        expense = Expense.objects.get(id=expense_id)
+        form_data = json.loads(request.body)
+        print('post request for id:', expense_id, '\n', form_data)
+        form = ExpenseForm(form_data, instance=expense)
+        if form.is_valid():
+            form.save()
+            print('success')
+            return JsonResponse({"success": True})
+        else:
+            print('fail')
+            return JsonResponse({"success": False, 'errors': form.errors, 'status': 400})
+    return JsonResponse({"success": False, "errors": "Invalid request method"})
+
+
+@csrf_exempt
+def expenses_delete(request, expense_id):
+    if request.method == 'POST':
+        expense = Expense.objects.get(id=expense_id)
+        expense.delete()
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False, "errors": "Invalid request method"})
+

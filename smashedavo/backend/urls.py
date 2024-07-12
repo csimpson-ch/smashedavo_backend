@@ -11,8 +11,10 @@ urlpatterns = [
     path('check_username_exists/<username>', views.check_username_exists, name='check_username_exists'),
     path('blogposts/', views.blogposts, name='blogposts'),
     path('expenses/', views.expenses, name='expenses'),
+    path('expenses/create/', views.expenses_create, name='expenses_create'),
+    path('expenses/<int:expense_id>/', views.expenses_select, name='expenses_select'),
+    path('expenses/<int:expense_id>/edit/', views.expenses_edit, name='expenses_edit'),
+    path('expenses/<int:expense_id>/delete/', views.expenses_delete, name='expenses_delete'),
     path('regularpayments/', views.regularpayments, name='regularpayments'),
-    path('expense/create/', views.expense_create, name='expense_create'),
-    path('expense/update/<int:expense_id>/', views.expense_update, name='expense_update'),
-    path('expense_category_choices/', views.expense_category_choices, name='expense_category_choices'),
+    # path('expense_category_choices/', views.expense_category_choices, name='expense_category_choices'),
 ]

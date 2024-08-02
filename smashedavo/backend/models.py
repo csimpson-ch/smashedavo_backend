@@ -144,19 +144,19 @@ class RegularPayment(models.Model):
 
     # set key details of this subscription
     description = models.CharField(max_length=50)
-    amount = models.FloatField(default=10.0)
-    category = models.CharField(max_length=20, choices=EXPENSE_CHOICES, default='Other')
-    interval = models.CharField(max_length=20, choices=INTERVAL_CHOICES, default='Monthly')
-    payments_per_year = models.IntegerField(default=12)
+    amount = models.FloatField()
+    category = models.CharField(max_length=20, choices=EXPENSE_CHOICES)
+    interval = models.CharField(max_length=20, choices=INTERVAL_CHOICES)
+    # payments_per_year = models.IntegerField(default=12)
     next_payment_date = models.DateField(default=timezone.now)
-    last_payment_date = models.DateField(default=timezone.now)
+    first_payment_date = models.DateField(default=timezone.now)
 
     # set foreign key owner of this subscription
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     loan = models.ForeignKey(Loan, blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'Description: {self.description}, Amount: {self.amount}, Interval: {self.interval}, Next Payment: {self.next_payment_date}\n '
+        return f'Description: {self.description}, Amount: {self.amount}, Interval: {self.interval}\n '
 
     def natural_key(self):
         return self.description

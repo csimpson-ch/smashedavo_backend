@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import requires_csrf_token, csrf_exempt
 from django.db import IntegrityError
 from django.db.models.constraints import UniqueConstraint
+from django.forms.models import model_to_dict
 from .models import *
 from .forms import *
 import json
@@ -156,9 +157,23 @@ def expenses_create(request):
     """
     if request.method == 'POST':
         data = json.loads(request.body)
+        if data['regularpayment'] == 'None':
+            regularpayment = None
+        else:
+            regularpayment = RegularPayment.objects.get(description=data['regularpayment'])
+            print(regularpayment.description)
+        if data['loan'] == 'None':
+            loan = None
+        else:
+            loan = Loan.objects.get(description=data['loan'])
+            print(loan.description)
         try:
-            form = ExpenseForm(data)
+            formdata = data
+            formdata['regularpayment'] = regularpayment
+            formdata['loan'] = loan
+            form = ExpenseForm(formdata)
         except:
+            print('form failed')
             return JsonResponse({"success": False, 'errors': 'unknown error in submitting form'})
         if form.is_valid():
             try:
@@ -171,6 +186,12 @@ def expenses_create(request):
         else:
             return JsonResponse({"success": False, 'errors': form.errors})
     elif request.method == 'GET':
+        choices_regularpayment = {'None': 'None'}
+        for regularpayment in RegularPayment.objects.all():
+            choices_regularpayment[regularpayment.description] = regularpayment.description
+        choices_loan = {'None': 'None'}
+        for loan in Loan.objects.all():
+            choices_loan[loan.description] = loan.description
         dict_to_dump = {
             'pk': None,
             'fields': {
@@ -179,9 +200,14 @@ def expenses_create(request):
                 'category': None,
                 'date': None,
                 'approved': False, 
+                'regularPayment': None,
+                'loan': None,
             },
-            'category_choices': dict(Expense.EXPENSE_CHOICES),
+            'choices_category': dict(Expense.EXPENSE_CHOICES),
+            'choices_regularpayment': choices_regularpayment,
+            'choices_loan': choices_loan,
         }
+        
         json_serializer = json.dumps(dict_to_dump)
         return HttpResponse(json_serializer, content_type='application/json')
     return JsonResponse({"success": False, "errors": "Invalid request method"})

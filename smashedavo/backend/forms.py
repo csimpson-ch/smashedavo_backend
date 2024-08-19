@@ -6,8 +6,8 @@ class ExpenseForm(forms.ModelForm):
     '''
     class Meta:
         model = Expense
-        fields = ['description', 'amount', 'category', 'date', 'approved']
-        # fields = "__all__"
+        # fields = ['description', 'amount', 'category', 'date', 'approved']
+        fields = "__all__"
 
 
 class RegularPaymentForm(forms.ModelForm):

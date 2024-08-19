@@ -3,6 +3,21 @@ from django.contrib.auth.models import PermissionsMixin, AbstractBaseUser, BaseU
 from django.utils import timezone
 import datetime
 
+# define some category tuples to use for income and expenses
+INCOME_CATEGORIES = (
+    ('Wages', 'Wages'),
+    ('Sale', 'Sale'),
+    ('Other', 'Other'),
+)
+
+INTERVAL_CHOICES = (
+    ('Weekly', 'Weekly'),
+    ('Fortnightly', 'Fortnightly'),
+    ('Monthly', 'Monthly'),
+    ('Quarterly', 'Quarterly'),
+    ('Annual', 'Annual'),
+)
+
 
 class CustomUserManager(BaseUserManager):
     use_in_migrations = True
@@ -144,19 +159,19 @@ class RegularPayment(models.Model):
 
     # set key details of this subscription
     description = models.CharField(max_length=50)
-    amount = models.FloatField(default=10.0)
-    category = models.CharField(max_length=20, choices=EXPENSE_CHOICES, default='Other')
-    interval = models.CharField(max_length=20, choices=INTERVAL_CHOICES, default='Monthly')
-    payments_per_year = models.IntegerField(default=12)
+    amount = models.FloatField()
+    category = models.CharField(max_length=20, choices=EXPENSE_CHOICES)
+    interval = models.CharField(max_length=20, choices=INTERVAL_CHOICES)
+    # payments_per_year = models.IntegerField(default=12)
     next_payment_date = models.DateField(default=timezone.now)
-    last_payment_date = models.DateField(default=timezone.now)
+    first_payment_date = models.DateField(default=timezone.now)
 
     # set foreign key owner of this subscription
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     loan = models.ForeignKey(Loan, blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f'Description: {self.description}, Amount: {self.amount}, Interval: {self.interval}, Next Payment: {self.next_payment_date}\n '
+        return f'Description: {self.description}, Amount: {self.amount}, Interval: {self.interval}\n '
 
     def natural_key(self):
         return self.description
@@ -205,7 +220,46 @@ class Expense(models.Model):
     def __str__(self):
         return f'{self.description}, {self.amount}, {self.date}'
 
+
+
+class RegularIncome(models.Model):
+
+    # set required fields for this model
+    description = models.CharField(max_length=50)
+    amount = models.FloatField()
+    category = models.CharField(max_length=20, choices=INCOME_CATEGORIES)
+    interval = models.CharField(max_length=20, choices=INTERVAL_CHOICES)
+
+    # payments_per_year = models.IntegerField(default=12)
+    next_payment_date = models.DateField(default=timezone.now)
+    first_payment_date = models.DateField(default=timezone.now)
+
+    # set foreign key owner of this subscription
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'Description: {self.description}, Amount: {self.amount}, Interval: {self.interval}\n '
+
+    def natural_key(self):
+        return self.description
+
+
+class Income(models.Model):
+
+    # set required fields
+    description = models.CharField(max_length=100)
+    amount = models.FloatField(default=0.)
+    category = models.CharField(max_length=20, choices=INCOME_CATEGORIES, default='Other')
+    approved = models.BooleanField(default=True)
+    date = models.DateField(default=timezone.now)
+
+    # set foreign key fields
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=False, null=False)
+    regularincome = models.ForeignKey(RegularIncome, on_delete=models.CASCADE, blank=True, null=True)
+
+    def __str__(self):
+        return f'{self.description}, {self.amount}, {self.category}, {self.date}'
+
+
 # TODO
-# model for repaying part of a debt/loan
-# model for investments/assets
-# models for income (regular/interval and adhoc)
+# model for investments/assets?

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Expense, RegularPayment
+from .models import *
 
 class ExpenseForm(forms.ModelForm):
     '''Form for creating a new instance of the EventInterval model.
@@ -15,5 +15,5 @@ class RegularPaymentForm(forms.ModelForm):
     '''
     class Meta:
         model = RegularPayment
-        fields = ['description', 'amount', 'category', 'interval', 'first_payment_date', 'next_payment_date']
-        # fields = "__all__"
+        # fields = ['description', 'amount', 'category', 'interval', 'first_payment_date', 'next_payment_date', 'loan']
+        fields = "__all__"

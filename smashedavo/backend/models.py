@@ -78,6 +78,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return self.username
 
+
 class BlogPost(models.Model):
     """Blog Post object associated with one User object.
     """
@@ -123,6 +124,9 @@ class Loan(models.Model):
     def __str__(self):
         return f'User: {self.user.username}, Description: {self.description}' 
 
+    def natural_key(self):
+        return self.description
+
 
 class RegularPayment(models.Model):
     """Object representing a recurring/regular payment made by user at regular intervals.
@@ -162,12 +166,11 @@ class RegularPayment(models.Model):
     amount = models.FloatField()
     category = models.CharField(max_length=20, choices=EXPENSE_CHOICES)
     interval = models.CharField(max_length=20, choices=INTERVAL_CHOICES)
-    # payments_per_year = models.IntegerField(default=12)
     next_payment_date = models.DateField(default=timezone.now)
     first_payment_date = models.DateField(default=timezone.now)
 
     # set foreign key owner of this subscription
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, null=True, on_delete=models.CASCADE)
     loan = models.ForeignKey(Loan, blank=True, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -221,7 +224,6 @@ class Expense(models.Model):
         return f'{self.description}, {self.amount}, {self.date}'
 
 
-
 class RegularIncome(models.Model):
 
     # set required fields for this model
@@ -229,8 +231,6 @@ class RegularIncome(models.Model):
     amount = models.FloatField()
     category = models.CharField(max_length=20, choices=INCOME_CATEGORIES)
     interval = models.CharField(max_length=20, choices=INTERVAL_CHOICES)
-
-    # payments_per_year = models.IntegerField(default=12)
     next_payment_date = models.DateField(default=timezone.now)
     first_payment_date = models.DateField(default=timezone.now)
 

@@ -12,16 +12,22 @@ from django.forms.models import model_to_dict
 from .models import *
 from .forms import *
 import json
+from datetime import date
 
 # TODO - filter objects by current user, currently retrieves all expenses.
 # this will require a group or permissions set up, I expect.
 # For now, just hardcode the username.
+
+# TODO - restrict retrieved objects to associated user.
+# TODO - restrict access to objects not belonging to user.
 
 # TODO - need to restrict object access based on username/permissions.
 
 # TODO - improve consistency of docstrings.
 
 # TODO - improve consistency of single vs double quotes. Consult PEP for guidance.
+
+
 
 @csrf_exempt
 def login_user(request):
@@ -102,25 +108,11 @@ def expenses(request):
     TODO restrict expenses retrieved to those belonging to this user.
     TODO sorts order of objects based on query, now deprecated, will sort directly in frontend instead
     """
-    # TODO - deprecated. Formerly used to determine which column to order by.
-    # request_orderby = request.GET.get('orderby')
-    # if request_orderby == 'amount':
-    #     orderby = 'amount'
-    # elif request_orderby == 'description':
-    #     orderby = 'description'
-    # elif request_orderby == 'category':
-    #     orderby = 'category'
-    # else:
-    #     orderby = 'date'
-    # if request.GET.get('ordering') == 'desc':
-    #     orderby = '-'+orderby
+    if request.method == 'GET':
+        json_serializer = serializers.serialize('json', Expense.objects.all().order_by('-date'), use_natural_foreign_keys=True)
+        return HttpResponse(json_serializer, content_type='application/json')
 
-    json_serializer = serializers.serialize(
-        'json',
-        Expense.objects.all().order_by('-date'),
-        use_natural_foreign_keys=True,
-    )
-    return HttpResponse(json_serializer, content_type='application/json')
+    return JsonResponse({"success": False, "errors": "Method not allowed"})
 
 
 @csrf_exempt
@@ -133,14 +125,73 @@ def expenses_select(request, expense_id):
     TODO - restrict access to only expenses belonging to this user.
     """
     if request.method == 'GET':
-        expense = Expense.objects.get(id=expense_id)
+        # try to get the object with matching id
+        try:
+            expense = Expense.objects.get(id=expense_id)
+        except Exception as err:
+            return JsonResponse({"success": False, "errors": "Expense not found"})
+
         # TODO somewhat unusual approach to get just one object, try to improve later.
-        json_serializer = serializers.serialize('json', [expense])[1:-1]
+        json_serializer = serializers.serialize('json', [expense], use_natural_foreign_keys=True,)[1:-1]
         json_dict = json.loads(json_serializer)
-        json_dict['category_choices'] = dict(Expense.EXPENSE_CHOICES)
+
+        # set dictionary of choices for regular payments and loans
+        choices_regularpayment = {'None': 'None'}
+        for regularpayment in RegularPayment.objects.all():
+            choices_regularpayment[regularpayment.description] = regularpayment.description
+        choices_loan = {'None': 'None'}
+        for loan in Loan.objects.all():
+            choices_loan[loan.description] = loan.description
+        
+        # set additional dictionaries containing choices for select boxes
+        json_dict['choices_category'] = dict(Expense.EXPENSE_CHOICES)
+        json_dict['choices_regularpayment'] = choices_regularpayment
+        json_dict['choices_loan'] = choices_loan
+
+        # return the serialized object
         json_to_return = json.dumps(json_dict)
         return HttpResponse(json_to_return, content_type='application/json')
+    
     return JsonResponse({"success": False, "errors": "Invalid request method"})
+
+
+def expense_form_processing(form_data):
+        '''Process raw form data submitted from frontend to create a valid Expense object.
+        '''
+        # initialise dictionary of processed form data
+        form_data_processed = {
+            'description': form_data['description'],
+            'amount': float(form_data['amount']),
+            'category': form_data['category'],
+            'date': form_data['date'],  
+        }
+
+        # convert html checkbox state to Python Boolean
+        if form_data.get('approved') is not None:
+            if form_data['approved'] == 'on' or form_data['approved'] == 'true' or form_data['approved'] == 'True':
+                form_data_processed['approved'] = True
+            else:
+                form_data_processed['approved'] = False
+        else:
+            form_data_processed['approved'] = False
+
+        # get regular payment object if one selected in form
+        if form_data['regularpayment'] == 'None':
+            form_data_processed['regularpayment'] = None
+        else:
+            form_data_processed['regularpayment'] = RegularPayment.objects.get(description=form_data['regularpayment'])
+        
+        # get loan object if one selected in form
+        if form_data['loan'] == 'None':
+            form_data_processed['loan'] = None
+        else:
+            form_data_processed['loan'] = Loan.objects.get(description=form_data['loan'])
+
+        # TODO - set user manually for now, automate later
+        # user = CustomUser.objects.get(username='colin.c.simpson@gmail.com')
+        form_data_processed['user'] = CustomUser.objects.get(username='colin.c.simpson@gmail.com')
+        
+        return form_data_processed
 
 
 @csrf_exempt
@@ -156,60 +207,60 @@ def expenses_create(request):
     TODO - remove hardcoding of username.
     """
     if request.method == 'POST':
-        data = json.loads(request.body)
-        if data['regularpayment'] == 'None':
-            regularpayment = None
-        else:
-            regularpayment = RegularPayment.objects.get(description=data['regularpayment'])
-            print(regularpayment.description)
-        if data['loan'] == 'None':
-            loan = None
-        else:
-            loan = Loan.objects.get(description=data['loan'])
-            print(loan.description)
+
+        # get raw form data and process to work with backend
+        form_data = json.loads(request.body)
+        form_data_processed = expense_form_processing(form_data)
+
+        # try except block to get form object and set foreign keys
         try:
-            formdata = data
-            formdata['regularpayment'] = regularpayment
-            formdata['loan'] = loan
-            form = ExpenseForm(formdata)
-        except:
-            print('form failed')
+            form = ExpenseForm(form_data_processed)
+            form.user = form_data_processed['user']
+            form.regularpayment = form_data_processed['regularpayment']
+            form.loan = form_data_processed['loan']
+        except Exception as err:
             return JsonResponse({"success": False, 'errors': 'unknown error in submitting form'})
+        
+        # create new expense if form is valid, otherwise return error
         if form.is_valid():
             try:
-                expense = form.save(commit=False)
-                expense.user = CustomUser.objects.get(username='colin.c.simpson@gmail.com')
-                expense.save()
+                form.save()
                 return JsonResponse({"success": True})
             except Exception as err:
+                print('something went wrong with save', err)
                 return JsonResponse({"success": False, 'errors': str(err)})
         else:
+            print('form not valid', form.errors)
             return JsonResponse({"success": False, 'errors': form.errors})
+    
     elif request.method == 'GET':
+
+        # set dictionary of choices for regular payments and loans
         choices_regularpayment = {'None': 'None'}
         for regularpayment in RegularPayment.objects.all():
             choices_regularpayment[regularpayment.description] = regularpayment.description
         choices_loan = {'None': 'None'}
         for loan in Loan.objects.all():
             choices_loan[loan.description] = loan.description
-        dict_to_dump = {
+        
+        # create JSON response
+        json_serializer = json.dumps({
             'pk': None,
             'fields': {
                 'description': None,
                 'amount': None,
-                'category': None,
-                'date': None,
-                'approved': False, 
-                'regularPayment': None,
-                'loan': None,
+                'category': 'Food',
+                'date': str(date.today()),
+                'approved': 'on',
+                'regularpayment': 'None',
+                'loan': 'None',
             },
             'choices_category': dict(Expense.EXPENSE_CHOICES),
             'choices_regularpayment': choices_regularpayment,
             'choices_loan': choices_loan,
-        }
-        
-        json_serializer = json.dumps(dict_to_dump)
+        })
         return HttpResponse(json_serializer, content_type='application/json')
+    
     return JsonResponse({"success": False, "errors": "Invalid request method"})
 
 
@@ -220,12 +271,21 @@ def expenses_edit(request, expense_id):
     TODO restrict access to only user who owns object.
     """
     if request.method == 'POST':
+
+        # get expense object
         try:
             expense = Expense.objects.get(id=expense_id)
         except Exception as err:
             return JsonResponse({"success": False, 'errors': err})
+
+        # get raw data from form and make call to function for processing
         form_data = json.loads(request.body)
-        form = ExpenseForm(form_data, instance=expense)
+        form_data_processed = expense_form_processing(form_data)
+        print(form_data)
+        print(form_data_processed)
+
+        # update object with processed form data
+        form = ExpenseForm(form_data_processed, instance=expense)
         if form.is_valid():
             form.save()
             return JsonResponse({"success": True})
@@ -246,14 +306,15 @@ def expenses_delete(request, expense_id):
 def regularpayments(request):
     """Return a HTTP response containing all regular payments as JSON.
 
-    TODO - restrict to regular payments belonging only to the user.
     """
-    json_serializer = serializers.serialize(
-        'json',
-        RegularPayment.objects.all(),
-        use_natural_foreign_keys=True,
-    )
-    return HttpResponse(json_serializer, content_type='application/json')
+    if request.method == 'GET':
+        json_serializer = serializers.serialize(
+            'json',
+            RegularPayment.objects.all(),
+            use_natural_foreign_keys=True,
+        )
+        return HttpResponse(json_serializer, content_type='application/json')
+    return JsonResponse({"success": False, "errors": "Method not allowed"})
 
 
 @csrf_exempt
@@ -269,26 +330,64 @@ def regularpayments_create(request):
     TODO - remove hardcoded user.
     TODO - check/improve error handling for invalid form submission.
     """
+    # attempt to post data collected by frontend form to create new object
     if request.method == 'POST':
-        data = json.loads(request.body)
+        
+        # preprocess the form data
+        form_data = json.loads(request.body)
+        form_data['amount'] = float(form_data['amount'])
+
+        # get loan object if one selected in form
+        if form_data['loan'] == 'None':
+            loan = None
+        else:
+            loan = Loan.objects.get(description=form_data['loan'])
+
+        print(form_data, loan)
+
+        # try except block to get form object
         try:
-            form = RegularPaymentForm(data)
+            form = RegularPaymentForm(form_data)
         except Exception as err:
             return JsonResponse({"success": False, 'errors': 'unknown error in submitting form'})
+        
+
+
+        # create new object if form is valid, otherwise return error
         if form.is_valid():
+            print('new object created successfully')
             try:
                 regularpayment = form.save(commit=False)
                 regularpayment.user = CustomUser.objects.get(username='colin.c.simpson@gmail.com')
+                # if loan is not None:
+                #     regularpayment.loan = loan
                 regularpayment.save()
                 return JsonResponse({"success": True})
             except Exception as err:
                 return JsonResponse({"success": False, 'errors': str(err)})
         else:
+            print('failed for reason\n', form.errors)
             return JsonResponse({"success": False, 'errors': form.errors})
+    
+    # fetch data needed for form in a GET request
     elif request.method == 'GET':
+        choices_loan = {'None': 'None'}
+        for loan in Loan.objects.all():
+            choices_loan[loan.description] = loan.description
         json_serializer = json.dumps({
-            'category_choices': dict(RegularPayment.EXPENSE_CHOICES),
-            'interval_choices': dict(RegularPayment.INTERVAL_CHOICES)
+            'pk': None,
+            'fields': {
+                'description': None,
+                'amount': None,
+                'category': None,
+                'interval': None,
+                'firstpaymentdate': None,
+                'nextpaymentdate': None,
+                'loan': None,
+            },
+            'choices_category': dict(RegularPayment.EXPENSE_CHOICES),
+            'choices_interval': dict(RegularPayment.INTERVAL_CHOICES),
+            'choices_loan': choices_loan,
         })
         return HttpResponse(json_serializer, content_type='application/json')
     return JsonResponse({"success": False, "errors": "Invalid request method"})
@@ -306,37 +405,64 @@ def regularpayments_select(request, regularpayment_id):
     TODO - check/improve error handling.
     """
     if request.method == 'GET':
+
+        # try to get regular payment object
         try: 
             regularpayment = RegularPayment.objects.get(id=regularpayment_id)
         except Exception as err:
             return JsonResponse({"success": False, "errors": "Regular payment not found"})
-        json_serializer = serializers.serialize('json', [regularpayment])[1:-1]
+        
+        # create dict of choices for loan
+        choices_loan = {'None': 'None'}
+        for loan in Loan.objects.all():
+            choices_loan[loan.description] = loan.description
+
+        # serialize object and return
+        json_serializer = serializers.serialize('json', [regularpayment], use_natural_foreign_keys=True)[1:-1]
         json_dict = json.loads(json_serializer)
-        json_dict['category_choices'] = dict(RegularPayment.EXPENSE_CHOICES)
-        json_dict['interval_choices'] = dict(RegularPayment.INTERVAL_CHOICES)
+        json_dict['choices_category'] = dict(RegularPayment.EXPENSE_CHOICES)
+        json_dict['choices_interval'] = dict(RegularPayment.INTERVAL_CHOICES)
+        json_dict['choices_loan'] = choices_loan
         json_to_return = json.dumps(json_dict)
         return HttpResponse(json_to_return, content_type='application/json')
+    
     return JsonResponse({"success": False, "errors": "Invalid request method"})
 
 
 @csrf_exempt
 def regularpayments_edit(request, regularpayment_id):
-    """
+    """Update object fields based on form submission. 
+
     TODO - currently hardcoded to specific user, need to fix.
     """
     if request.method == 'POST':
-        regularpayment = RegularPayment.objects.get(id=regularpayment_id)
+
+        # try to get regular payment object
+        try:
+            regularpayment = RegularPayment.objects.get(id=regularpayment_id)
+        except Exception as err:
+            return JsonResponse({"success": False, 'errors': err})
+
+        # get form using posted data
         form_data = json.loads(request.body)
-        print('post request for id:', regularpayment_id, '\n', form_data)
+
+        # set user in form data
+        # form_data['user'] = CustomUser.objects.get(username='colin.c.simpson@gmail.com')
+
         form = RegularPaymentForm(form_data, instance=regularpayment)
+
+        print(form_data)
+        # TODO - currently frontend not sending loan data, probably aLSO Need to manually set user
+        # form.user = CustomUser.objects.get(username='colin.c.simpson@gmail.com')
+
+        # if form is valid, update object, otherwise return error
         if form.is_valid():
             form.save()
-            print('success')
             return JsonResponse({"success": True})
         else:
-            print('fail')
+            print('not valid, errors', form.errors)
             return JsonResponse({"success": False, 'errors': form.errors, 'status': 400})
+    
     return JsonResponse({"success": False, "errors": "Invalid request method"})
 
-
-
+        
